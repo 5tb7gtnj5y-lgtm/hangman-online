@@ -5,7 +5,6 @@
   let session = null, state = null, socket = null, online = false, pending = null;
   let retryTimer = null, heartbeat = null, retryCount = 0, active = false, httpBusy = false;
   let lastView = null;
-  let hadOpponent = false, joinNoticeTimer = null;
   const storageKey = 'hangman-online-rooms-v1';
   let stored = { rooms: {}, current: null };
   try { const value = JSON.parse(localStorage.getItem(storageKey)); if (value?.rooms && typeof value.rooms === 'object') stored = value; } catch (_) {}
@@ -51,8 +50,6 @@
   }
   function showWelcome() {
     active = false; closeSocket(); state = null; lastView = null;
-    clearTimeout(joinNoticeTimer); hadOpponent = false;
-    $('join-notification').hidden = true; $('join-notification').textContent = '';
     $('welcome').hidden = false; $('room').hidden = true;
     status('Two phones. Anywhere.', true);
     const current = stored.current && stored.rooms[stored.current];
@@ -63,8 +60,6 @@
   function startRoom(value) {
     closeSocket(); remember(value); active = true; retryCount = 0;
     state = value.state; online = false;
-    clearTimeout(joinNoticeTimer); hadOpponent = !!state.opponent;
-    $('join-notification').hidden = true; $('join-notification').textContent = '';
     $('welcome').hidden = true; $('room').hidden = false;
     $('invite-box').hidden = true;
     history.replaceState(null, '', '?room=' + encodeURIComponent(session.code));
@@ -172,19 +167,8 @@
       const slot = document.createElement('span'); slot.className = 'letter-slot' + (missing.includes(letter) ? ' missing' : ''); slot.textContent = letter === '_' ? '' : letter; target.appendChild(slot);
     }
   }
-  function notifyJoin() {
-    if (!hadOpponent && state.opponent) {
-      const notice = $('join-notification');
-      notice.hidden = false;
-      notice.textContent = state.opponent.name + ' joined your room. You’re ready to play!';
-      clearTimeout(joinNoticeTimer);
-      joinNoticeTimer = setTimeout(() => { notice.hidden = true; notice.textContent = ''; }, 10000);
-    }
-    hadOpponent = !!state.opponent;
-  }
   function render() {
     if (!state) return;
-    notifyJoin();
     const canChoose = state.phase === 'choosing' && state.role === 'setter';
     const playing = state.phase === 'playing';
     const guessing = playing && state.role === 'guesser';
@@ -246,22 +230,19 @@
     }
     $('keyboard').appendChild(row);
   }
-  async function share(home = false) {
-    const inRoom = !home && active && session;
-    if (!home && !inRoom) return;
-    const link = new URL(location.pathname, location.origin);
-    if (inRoom) link.searchParams.set('room', session.code);
-    const prefix = home ? 'home-' : '';
-    $(prefix + 'invite-link').value = link.href;
+  async function share() {
+    if (!session) return;
+    const link = new URL(location.pathname, location.origin); link.searchParams.set('room', session.code);
+    $('invite-link').value = link.href;
     try {
-      if (navigator.share) { await navigator.share({ title: 'Play Hangman with me', text: inRoom ? 'Join my hangman game. Room code: ' + session.code : 'Play Hangman Online with a friend', url: link.href }); return; }
+      if (navigator.share) { await navigator.share({ title: 'Play Hangman with me', text: 'Join my hangman game. Room code: ' + session.code, url: link.href }); return; }
       await navigator.clipboard.writeText(link.href);
-      $(prefix + 'invite-note').textContent = 'Link copied. Send it to your friend.';
+      $('invite-note').textContent = 'Link copied. Send it to your friend.';
     } catch (fail) {
       if (fail.name === 'AbortError') return;
-      $(prefix + 'invite-note').textContent = 'Select and copy this link, then send it to your friend.';
+      $('invite-note').textContent = 'Select and copy this link, then send it to your friend.';
     }
-    $(prefix + 'invite-box').hidden = false;
+    $('invite-box').hidden = false;
   }
   $('create-form').addEventListener('submit', event => { event.preventDefault(); openRoom(true); });
   $('join-form').addEventListener('submit', event => { event.preventDefault(); openRoom(false); });
@@ -275,8 +256,7 @@
     const show = $('secret').type === 'password'; $('secret').type = show ? 'text' : 'password';
     $('show-word').textContent = show ? 'Hide' : 'Show'; $('show-word').setAttribute('aria-pressed', String(show)); $('show-word').setAttribute('aria-label', show ? 'Hide secret word' : 'Show secret word');
   });
-  $('share').addEventListener('click', () => share()); $('invite-friend').addEventListener('click', () => share());
-  $('share-home').addEventListener('click', () => share(true));
+  $('share').addEventListener('click', share); $('invite-friend').addEventListener('click', share);
   $('leave').addEventListener('click', () => { clearSecret(); showWelcome(); });
   $('rejoin').addEventListener('click', () => { const saved = stored.rooms[stored.current]; if (saved) resume(saved); });
   document.addEventListener('keydown', event => {
