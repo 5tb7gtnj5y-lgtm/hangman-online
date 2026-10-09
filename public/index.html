@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en-GB"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#182536"><meta name="description" content="Play hangman with a friend on two phones, wherever you are. Share a room, watch guesses live and swap turns."><meta name="referrer" content="no-referrer"><title>Hangman Online</title><link rel="stylesheet" href="/style.css"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><script src="/app.js" defer></script></head>
+<body><div class="shell">
+<header><div class="brand"><span class="brand-mark" aria-hidden="true">H</span><h1>Hangman<span class="online-label">ONLINE</span></h1></div><span class="header-note" id="connection" role="status">Two phones.<br>Anywhere.</span></header>
+<main>
+<section class="card welcome" id="welcome" aria-labelledby="welcome-heading">
+<span class="eyebrow">Play with a friend</span><h2 id="welcome-heading">Your word.<br>Their challenge.</h2><p class="intro">Create a room and share it. Your friend guesses on their own phone while you watch live.</p>
+<form id="create-form"><label for="name">Your name <span class="optional">(optional)</span></label><input class="field" id="name" maxlength="24" placeholder="Enter your name" autocomplete="nickname"><button type="submit" class="primary full" id="create-button">Create a game</button></form>
+<div class="divider"><span>or join a game</span></div>
+<form id="join-form"><label for="code">Room code</label><div class="join-row"><input class="field code-input" id="code" maxlength="12" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="8-character code" required><button class="secondary" id="join-button" type="submit">Join</button></div></form>
+<p class="error" id="welcome-error" role="alert" hidden></p><button class="small-link" id="rejoin" type="button" hidden>Rejoin your game</button>
+</section>
+<section id="room" hidden aria-label="Your shared game">
+<div class="room-strip"><div><span class="small-label">ROOM CODE</span><strong id="room-code"></strong><span class="players" id="players"></span></div><div class="room-actions"><button class="secondary" id="share" type="button">Share game</button><button class="small-link" id="leave" type="button">Other room</button></div></div>
+<div class="invite-box" id="invite-box" hidden><label for="invite-link">Game link</label><input class="field" id="invite-link" readonly><p class="helper" id="invite-note">Copy this link and send it to your friend.</p></div>
+<p class="error room-error" id="room-error" role="alert" hidden></p>
+<div class="game-layout" id="layout" data-stage="waiting">
+<section class="board" id="board" aria-label="Hangman drawing" hidden><div class="board-top"><span class="board-label" id="board-label">Wrong guesses</span><span class="chance-pill" id="chances">6 guesses left</span></div><div class="drawing-wrap"><svg class="drawing" viewBox="0 0 260 280" role="img" aria-labelledby="drawing-title">
+            <title id="drawing-title">Empty gallows. Six wrong guesses allowed.</title>
+            <path class="gallows" d="M28 257H190 M65 257V28H170V58 M65 69L106 28"/>
+            <g class="person">
+              <circle class="part" data-part="1" cx="170" cy="80" r="22"/>
+              <path class="part" data-part="2" d="M170 102V173"/>
+              <path class="part" data-part="3" d="M170 116L136 149"/>
+              <path class="part" data-part="4" d="M170 116L204 149"/>
+              <path class="part" data-part="5" d="M170 173L139 217"/>
+              <path class="part" data-part="6" d="M170 173L201 217"/>
+            </g>
+          </svg></div><p class="board-bottom"><strong>One letter at a time.</strong><br>Find the word before the drawing is complete.</p></section>
+<section class="card play-card" id="game-card"><div class="round-tag"><span class="eyebrow" id="role-label"></span><span class="round-number" id="round-number"></span></div><h2 id="round-heading" tabindex="-1"></h2>
+<div class="result" id="last-result" role="status" aria-live="polite" hidden><h3 id="result-heading"></h3><p id="result-copy"></p><div class="word" id="result-word" aria-hidden="true"></div><p class="helper">Roles swapped. Time for the next word.</p></div>
+<div id="waiting"><p class="intro">Share the game link or room code. Once your friend joins, you can send them a secret word.</p><button class="primary" id="invite-friend" type="button">Share game</button></div>
+<div id="choosing" hidden><p class="intro">Enter your word and send it. Your opponent will see blanks, then you can watch their guesses live.</p><form id="word-form" autocomplete="off"><label for="secret">Secret word</label><div class="input-wrap"><input id="secret" type="password" maxlength="24" placeholder="Enter a word" autocomplete="off" autocapitalize="characters" spellcheck="false" autocorrect="off" aria-describedby="word-help"><button class="show-button" id="show-word" type="button" aria-label="Show secret word" aria-pressed="false">Show</button></div><p class="helper" id="word-help">1–24 letters, A–Z. No spaces or numbers.</p><button class="primary full" id="send-word" type="submit">Send hidden word</button></form></div>
+<div id="waiting-word" hidden><p class="intro" id="waiting-word-copy"></p></div>
+<div id="playing" hidden><div class="word" id="word" aria-hidden="true"></div><p class="sr-only" id="word-status"></p><div class="keyboard" id="keyboard" role="group" aria-label="Letters" aria-describedby="word-status"></div><p class="feedback" id="feedback" role="status" aria-live="polite" aria-atomic="true"></p><p class="keyboard-note" id="keyboard-note"></p></div>
+<p class="helper opponent-status" id="opponent-status"></p>
+</section></div></section>
+</main><footer><p>Six wrong guesses. Then swap turns.<br>Both phones need an internet connection.</p></footer>
+</div><noscript><p>Please enable JavaScript to play Hangman Online.</p></noscript></body></html>

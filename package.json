@@ -1,0 +1,8 @@
+{
+  "name": "hangman-online",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": { "dev": "wrangler dev", "deploy": "wrangler deploy", "test": "node --test tests/game.test.js", "test:integration": "node tests/online.test.js" },
+  "devDependencies": { "wrangler": "4.92.0" }
+}

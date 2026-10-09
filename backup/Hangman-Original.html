@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#182536">
+  <meta name="description" content="Play traditional hangman with a friend. Choose a secret word, pass the device, and guess the letters before six wrong guesses.">
+  <title>Hangman — two-player word game</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23182536'/%3E%3Cpath d='M9 7v18m14-18v18M9 16h14' stroke='%23ccf66c' stroke-width='4' fill='none'/%3E%3C/svg%3E">
+  <style>
+    :root{color-scheme:light;--ink:#182536;--muted:#5b6775;--paper:#fff;--page:#eef2f7;--line:#d7dfe9;--lime:#ccf66c;--blue:#285adb;--orange:#ffad85;--good:#254aaa;--bad:#973816;font-family:ui-rounded,"SF Pro Rounded",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-synthesis:none}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--page);color:var(--ink);min-height:100svh;padding:28px 24px 32px}
+    button,input{font:inherit}
+    button{cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+    button:disabled{cursor:default}
+    button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--blue);outline-offset:4px}
+    [hidden]{display:none!important}
+    .shell{max-width:1020px;margin:0 auto}
+    header{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:24px}
+    .brand{display:flex;gap:12px;align-items:center}
+    .brand-mark{background:var(--ink);color:var(--lime);width:44px;height:44px;display:grid;place-items:center;border-radius:12px;font-size:1.6rem;font-weight:900}
+    h1{margin:0;font-size:1.7rem;font-weight:900;letter-spacing:-.05em}
+    .header-note{font-size:.875rem;color:var(--muted);line-height:1.4;text-align:right}
+    .game-layout{display:grid;grid-template-columns:.9fr 1.1fr;gap:24px;align-items:start}
+    .board{background:var(--ink);color:#fff;border-radius:28px;overflow:hidden;min-height:475px;display:flex;flex-direction:column;padding:24px;position:relative}
+    .board-top{display:flex;justify-content:space-between;gap:14px;align-items:center;font-size:.875rem}
+    .board-label{color:#c5d0df;font-weight:600}
+    .chance-pill{color:var(--lime);background:#2b3e3d;border:1px solid #48603f;border-radius:20px;padding:7px 12px;font-weight:700;white-space:nowrap}
+    .drawing-wrap{display:grid;place-items:center;flex:1;padding:24px 12px 10px}
+    .drawing{width:100%;max-width:260px;height:280px;overflow:visible}
+    .gallows{stroke:#8091a7;stroke-width:5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+    .person{stroke:#ccf66c;stroke-width:5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+    .part{transition:opacity .22s ease;opacity:0}
+    .part.visible{opacity:1}
+    .board[data-outcome="lost"] .person{stroke:var(--orange)}
+    .board-bottom{font-size:1rem;line-height:1.5;color:#c5d0df;margin:0}
+    .board-bottom strong{color:#fff;font-weight:700}
+    .card{background:var(--paper);border:1px solid var(--line);border-radius:28px;padding:32px;min-width:0;box-shadow:0 8px 32px #18253606}
+    .eyebrow{display:block;color:var(--blue);font-size:.875rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin:0 0 16px}
+    h2{margin:0 0 12px;font-size:clamp(1.9rem,4.2vw,2.55rem);line-height:1.1;letter-spacing:-.045em;font-weight:850;text-wrap:balance}
+    .intro{font-size:1rem;line-height:1.6;color:var(--muted);margin:0 0 28px}
+    label{font-size:1rem;font-weight:750;display:block;margin-bottom:9px}
+    .input-wrap{position:relative}
+    #secret{width:100%;height:58px;background:#f8faff;border:2px solid var(--line);border-radius:13px;padding:12px 88px 12px 16px;font-size:1.125rem;color:var(--ink);letter-spacing:.04em}
+    #secret:focus{border-color:var(--blue)}
+    .show-button{position:absolute;right:8px;top:8px;min-width:65px;height:42px;border:0;border-radius:8px;background:#e7edf8;color:#263d65;font-size:.875rem;font-weight:750}
+    .helper{font-size:.875rem;color:var(--muted);line-height:1.5;margin:9px 0 0}
+    .error{color:#a12332;font-size:1rem;line-height:1.5;margin:12px 0 0}
+    .primary{border:2px solid var(--ink);background:var(--lime);color:var(--ink);border-radius:13px;padding:15px 22px;min-height:54px;font-size:1rem;font-weight:850;box-shadow:0 3px 0 var(--ink);transition:background .15s,transform .15s,box-shadow .15s}
+    .primary:hover{background:#bcec54}
+    .primary:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
+    .full{width:100%;margin-top:26px}
+    .secondary{background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:12px;min-height:48px;padding:12px 18px;font-size:1rem;font-weight:700}
+    .secondary:hover{background:#f2f5fa}
+    .handover-symbol{width:64px;height:64px;border-radius:18px;display:grid;place-items:center;background:#eaf5d7;margin:0 0 22px;color:#314d19}
+    .handover-symbol svg{width:30px;height:30px}
+    .handover .intro{margin-bottom:12px}
+    .round-tag{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:18px}
+    .round-tag .eyebrow{margin:0}
+    .small-link{border:0;background:none;color:var(--muted);text-decoration:underline;text-underline-offset:4px;font-size:.875rem;padding:8px;min-height:38px}
+    #play-heading{font-size:1.65rem;margin:0 0 20px}
+    .word{display:flex;flex-wrap:wrap;justify-content:center;gap:7px;min-height:60px;margin:20px 0 26px;padding:8px 0}
+    .letter-slot{display:grid;place-items:center;flex:0 0 34px;height:47px;border-bottom:3px solid var(--ink);font-size:1.7rem;font-weight:800;line-height:1;color:var(--ink)}
+    .letter-slot.missing{color:var(--bad);border-color:var(--bad)}
+    .keyboard{display:flex;flex-direction:column;gap:9px;margin-top:20px}
+    .key-row{display:flex;justify-content:center;gap:6px}
+    .key{flex:0 1 39px;min-width:0;height:46px;border:1px solid #cbd5e3;border-radius:9px;background:#f2f5fa;color:var(--ink);font-size:1rem;font-weight:800;box-shadow:0 2px 0 #cbd5e3;padding:0}
+    .key:hover:not(:disabled){background:#e4ebf8;border-color:#9baecc}
+    .key:active:not(:disabled){transform:translateY(1px);box-shadow:0 1px 0 #cbd5e3}
+    .key.correct{background:#e0eafa;border-color:#a9bfe6;color:var(--good);box-shadow:none}
+    .key.wrong{background:#ffecdf;border-color:#eac0aa;color:var(--bad);box-shadow:none}
+    .key:disabled:not(.correct):not(.wrong){opacity:.45;box-shadow:none}
+    .feedback{min-height:25px;font-size:1rem;line-height:1.5;color:var(--muted);text-align:center;margin:18px 0 0}
+    .feedback.correct{color:var(--good)}
+    .feedback.wrong{color:var(--bad)}
+    .keyboard-note{font-size:.875rem;color:var(--muted);text-align:center;margin:18px 0 0;line-height:1.5}
+    .result{margin:24px 0 0;background:#edf5df;border-radius:15px;padding:22px}
+    .result.lost{background:#fff0e8}
+    .result h3{font-size:1.6rem;line-height:1.2;letter-spacing:-.03em;margin:0 0 9px}
+    .result p{font-size:1rem;line-height:1.5;margin:0 0 18px;overflow-wrap:anywhere}
+    .restart-prompt{margin-top:20px;background:#f1f4f9;padding:18px;border-radius:14px;font-size:1rem;line-height:1.5}
+    .restart-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+    .restart-actions .primary{box-shadow:none}
+    footer{padding:24px 6px 0;color:var(--muted);font-size:.875rem;line-height:1.5;text-align:center}
+    footer p{margin:0}
+    .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;clip-path:inset(50%)}
+    @media(max-width:760px){body{padding:20px 16px 28px}.game-layout{display:flex;flex-direction:column;gap:16px}.card{width:100%;padding:26px;border-radius:24px}.board{width:100%;min-height:0;padding:20px;border-radius:24px}.drawing-wrap{padding:14px 0 0}.drawing{height:166px;max-width:165px}.board-bottom{display:none}.game-layout[data-stage="setup"] .board,.game-layout[data-stage="handover"] .board{display:none}header{margin-bottom:20px}.header-note{max-width:105px}.keyboard{gap:9px}.key-row{gap:6px}.key{height:47px;flex-basis:45px}.word{gap:6px;margin:14px 0 20px}.letter-slot{flex-basis:31px;height:40px;font-size:1.55rem}#play-heading{font-size:1.5rem;margin-bottom:12px}.play-card{padding:22px 18px}.board-top{font-size:.875rem}.keyboard-note{margin-top:14px}.keyboard{margin-top:14px}.feedback{margin-top:16px}.result{margin-top:18px;padding:18px}footer{padding-top:20px}}
+    @media(max-width:360px){body{padding:16px 10px}.card{padding:22px 18px}.play-card{padding:20px 12px}.key-row{gap:4px}.key{border-radius:7px}.header-note{font-size:.875rem}.brand{gap:8px}h1{font-size:1.5rem}}
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important}}
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div class="brand"><span class="brand-mark" aria-hidden="true">H</span><h1>Hangman</h1></div>
+      <span class="header-note">Two players.<br>One screen.</span>
+    </header>
+    <main class="game-layout" id="layout" data-stage="setup">
+      <section class="board" id="board" aria-label="Hangman drawing">
+        <div class="board-top"><span class="board-label" id="board-label">The classic word game</span><span class="chance-pill" id="chances">6 wrong guesses</span></div>
+        <div class="drawing-wrap">
+          <svg class="drawing" viewBox="0 0 260 280" role="img" aria-labelledby="drawing-title">
+            <title id="drawing-title">Empty gallows. Six wrong guesses allowed.</title>
+            <path class="gallows" d="M28 257H190 M65 257V28H170V58 M65 69L106 28"/>
+            <g class="person">
+              <circle class="part" data-part="1" cx="170" cy="80" r="22"/>
+              <path class="part" data-part="2" d="M170 102V173"/>
+              <path class="part" data-part="3" d="M170 116L136 149"/>
+              <path class="part" data-part="4" d="M170 116L204 149"/>
+              <path class="part" data-part="5" d="M170 173L139 217"/>
+              <path class="part" data-part="6" d="M170 173L201 217"/>
+            </g>
+          </svg>
+        </div>
+        <p class="board-bottom"><strong>One letter at a time.</strong><br>Find the word before the drawing is complete.</p>
+      </section>
+
+      <section class="card" id="setup" aria-labelledby="setup-heading">
+        <span class="eyebrow">Player 1 · Choose the word</span>
+        <h2 id="setup-heading">Keep it a secret.</h2>
+        <p class="intro">Player 2, look away while your opponent enters a word.</p>
+        <form id="word-form" novalidate autocomplete="off">
+          <label for="secret">Secret word</label>
+          <div class="input-wrap">
+            <input id="secret" name="secret-word" type="password" maxlength="24" placeholder="Enter a word" autocomplete="off" autocapitalize="characters" spellcheck="false" autocorrect="off" aria-describedby="word-help word-error" enterkeyhint="done">
+            <button class="show-button" id="show-word" type="button" aria-label="Show secret word" aria-pressed="false">Show</button>
+          </div>
+          <p class="helper" id="word-help">1–24 letters, A–Z. No spaces or numbers.</p>
+          <p class="error" id="word-error" role="alert" hidden></p>
+          <button class="primary full" type="submit">Hide word &amp; pass it over</button>
+        </form>
+      </section>
+
+      <section class="card handover" id="handover" aria-labelledby="handover-heading" hidden>
+        <span class="eyebrow">Over to Player 2</span>
+        <div class="handover-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><path d="M12 14v3"/></svg></div>
+        <h2 id="handover-heading">Word hidden.<br>Pass it over.</h2>
+        <p class="intro">Player 2, guess the word one letter at a time. You have six wrong guesses.</p>
+        <button class="primary full" id="start-guessing" type="button">I’m ready to guess</button>
+      </section>
+
+      <section class="card play-card" id="play" aria-labelledby="play-heading" hidden>
+        <div class="round-tag"><span class="eyebrow">Player 2 · Guess the word</span><button class="small-link" id="new-word" type="button">New word</button></div>
+        <h2 id="play-heading" tabindex="-1">What’s the word?</h2>
+        <div class="word" id="word" aria-hidden="true"></div>
+        <p class="sr-only" id="word-status"></p>
+        <div class="keyboard" id="keyboard" role="group" aria-label="Guess a letter" aria-describedby="word-status"></div>
+        <p class="feedback" id="feedback" role="status" aria-live="polite" aria-atomic="true">Choose your first letter.</p>
+        <p class="keyboard-note" id="keyboard-note">Tap a letter, or use your keyboard.</p>
+        <div class="result" id="result" role="region" aria-labelledby="result-heading" hidden>
+          <h3 id="result-heading" tabindex="-1"></h3>
+          <p id="result-copy"></p>
+          <button class="primary" id="play-again" type="button">Play again · swap players</button>
+        </div>
+        <div class="restart-prompt" id="restart-prompt" hidden>
+          End this round and choose a new word?
+          <div class="restart-actions"><button class="primary" id="confirm-restart" type="button">Choose a new word</button><button class="secondary" id="cancel-restart" type="button">Keep playing</button></div>
+        </div>
+      </section>
+    </main>
+    <footer><p id="footer-copy">Find every letter to win. Six wrong guesses complete the hangman.</p></footer>
+  </div>
+  <noscript><p style="text-align:center">Please enable JavaScript to play this game.</p></noscript>
+  <script>
+  (() => {
+    'use strict';
+    const MAX_WRONG = 6;
+    const $ = id => document.getElementById(id);
+    const ui = Object.fromEntries(['layout','board','board-label','chances','drawing-title','setup','handover','play','word-form','secret','show-word','word-error','start-guessing','play-heading','word','word-status','keyboard','feedback','keyboard-note','result','result-heading','result-copy','new-word','play-again','restart-prompt','confirm-restart','cancel-restart'].map(id => [id,$(id)]));
+    let secretWord = '';
+    let guesses = new Set();
+    let wrong = 0;
+    let stage = 'setup';
+    let outcome = null;
+    const keys = new Map();
+
+    for (const letters of ['QWERTYUIOP','ASDFGHJKL','ZXCVBNM']) {
+      const row = document.createElement('div');
+      row.className = 'key-row';
+      for (const letter of letters) {
+        const key = document.createElement('button');
+        key.type = 'button';
+        key.className = 'key';
+        key.textContent = letter;
+        key.dataset.letter = letter;
+        key.setAttribute('aria-label', 'Guess ' + letter);
+        key.addEventListener('click', () => guessLetter(letter));
+        keys.set(letter,key);
+        row.appendChild(key);
+      }
+      ui.keyboard.appendChild(row);
+    }
+
+    function changeStage(next) {
+      stage = next;
+      ui.layout.dataset.stage = stage;
+      ui.setup.hidden = stage !== 'setup';
+      ui.handover.hidden = stage !== 'handover';
+      ui.play.hidden = stage !== 'playing' && stage !== 'finished';
+    }
+
+    function setWord(value) {
+      if (stage !== 'setup') throw new Error('A word can only be chosen before a round starts.');
+      if (typeof value !== 'string') throw new Error('Enter a word using letters A–Z.');
+      const clean = value.trim();
+      if (!/^[a-zA-Z]{1,24}$/.test(clean)) throw new Error('Enter 1–24 letters, A–Z, with no spaces or numbers.');
+      secretWord = clean.toUpperCase();
+      guesses = new Set();
+      wrong = 0;
+      outcome = null;
+      ui.secret.value = '';
+      ui.secret.type = 'password';
+      ui['word-form'].reset();
+      ui['show-word'].textContent = 'Show';
+      ui['show-word'].setAttribute('aria-pressed','false');
+      ui['show-word'].setAttribute('aria-label','Show secret word');
+      ui['word-error'].hidden = true;
+      ui.secret.removeAttribute('aria-invalid');
+      ui.secret.blur();
+      changeStage('handover');
+      ui['start-guessing'].focus({preventScroll:true});
+      return {stage:'handover',wordHidden:true};
+    }
+
+    function startGuessing() {
+      if (stage !== 'handover') throw new Error('Choose a secret word first.');
+      ui.result.hidden = true;
+      ui['restart-prompt'].hidden = true;
+      ui['keyboard-note'].hidden = false;
+      ui['play-heading'].textContent = 'What’s the word?';
+      ui.feedback.className = 'feedback';
+      ui.feedback.textContent = 'Choose your first letter.';
+      changeStage('playing');
+      render();
+      ui['play-heading'].focus({preventScroll:true});
+      return publicState();
+    }
+
+    function render() {
+      ui.word.replaceChildren();
+      const reveal = stage === 'finished';
+      const spoken = [];
+      for (const letter of secretWord) {
+        const known = guesses.has(letter);
+        const slot = document.createElement('span');
+        slot.className = 'letter-slot' + (reveal && !known ? ' missing' : '');
+        slot.textContent = known || reveal ? letter : '';
+        ui.word.appendChild(slot);
+        spoken.push(known || reveal ? letter : 'blank');
+      }
+      const remaining = MAX_WRONG - wrong;
+      ui['word-status'].textContent = secretWord.length + ' letters: ' + spoken.join(', ') + '. ' + remaining + ' wrong ' + (remaining === 1 ? 'guess' : 'guesses') + ' left.';
+      ui.chances.textContent = remaining + (remaining === 1 ? ' guess left' : ' guesses left');
+      ui['board-label'].textContent = stage === 'finished' ? (outcome === 'won' ? 'Word solved' : 'Round over') : 'Wrong guesses: ' + wrong + ' / ' + MAX_WRONG;
+      ui['drawing-title'].textContent = wrong + ' of 6 hangman parts drawn. ' + remaining + ' wrong guesses left.';
+      ui.board.dataset.outcome = outcome || '';
+      document.querySelectorAll('[data-part]').forEach(part => part.classList.toggle('visible',Number(part.dataset.part) <= wrong));
+      for (const [letter,key] of keys) {
+        const used = guesses.has(letter);
+        const good = used && secretWord.includes(letter);
+        key.className = 'key' + (used ? (good ? ' correct' : ' wrong') : '');
+        key.disabled = used || stage === 'finished' || !ui['restart-prompt'].hidden;
+        key.setAttribute('aria-label',used ? letter + (good ? ', correct guess' : ', wrong guess') : 'Guess ' + letter);
+      }
+    }
+
+    function guessLetter(value) {
+      if (typeof value !== 'string' || !/^[a-zA-Z]$/.test(value)) throw new Error('Choose a single letter, A–Z.');
+      if (stage !== 'playing' || !ui['restart-prompt'].hidden) throw new Error('Start or resume the guessing round first.');
+      const letter = value.toUpperCase();
+      if (guesses.has(letter)) return {...publicState(),alreadyGuessed:true};
+      guesses.add(letter);
+      const correct = secretWord.includes(letter);
+      if (!correct) wrong++;
+      const won = [...secretWord].every(character => guesses.has(character));
+      if (won || wrong === MAX_WRONG) {
+        outcome = won ? 'won' : 'lost';
+        changeStage('finished');
+      }
+      render();
+      ui.feedback.className = 'feedback ' + (correct ? 'correct' : 'wrong');
+      const remaining = MAX_WRONG - wrong;
+      ui.feedback.textContent = letter + (correct ? ' is in the word.' : ' isn’t in the word. ' + remaining + ' wrong ' + (remaining === 1 ? 'guess' : 'guesses') + ' left.');
+      if (stage === 'finished') showResult();
+      return publicState();
+    }
+
+    function showResult() {
+      const won = outcome === 'won';
+      ui.result.className = 'result' + (won ? '' : ' lost');
+      ui['result-heading'].textContent = won ? 'You got it!' : 'Out of guesses!';
+      ui['play-heading'].textContent = won ? 'Word solved.' : 'Round over.';
+      ui['result-copy'].textContent = won ? 'The word was ' + secretWord + '. Solved with ' + wrong + ' wrong ' + (wrong === 1 ? 'guess' : 'guesses') + '.' : 'The word was ' + secretWord + '. Swap players and try another word.';
+      ui['keyboard-note'].hidden = true;
+      ui.result.hidden = false;
+      ui.feedback.textContent = won ? 'You win! The word was ' + secretWord + '.' : 'Game over. The word was ' + secretWord + '.';
+      ui['result-heading'].focus({preventScroll:true});
+    }
+
+    function resetRound() {
+      secretWord = '';
+      guesses.clear();
+      wrong = 0;
+      outcome = null;
+      ui['word-form'].reset();
+      ui.secret.value = '';
+      ui.secret.type = 'password';
+      ui['show-word'].textContent = 'Show';
+      ui['show-word'].setAttribute('aria-pressed','false');
+      ui['show-word'].setAttribute('aria-label','Show secret word');
+      ui['word-error'].hidden = true;
+      ui['word-error'].textContent = '';
+      ui.secret.removeAttribute('aria-invalid');
+      ui['restart-prompt'].hidden = true;
+      ui.result.hidden = true;
+      ui['result-copy'].textContent = '';
+      ui.word.replaceChildren();
+      ui['word-status'].textContent = '';
+      ui.feedback.textContent = '';
+      ui.board.dataset.outcome = '';
+      ui.chances.textContent = '6 wrong guesses';
+      ui['board-label'].textContent = 'The classic word game';
+      ui['drawing-title'].textContent = 'Empty gallows. Six wrong guesses allowed.';
+      document.querySelectorAll('[data-part]').forEach(part => part.classList.remove('visible'));
+      for (const [letter,key] of keys) {
+        key.disabled = false;
+        key.className = 'key';
+        key.setAttribute('aria-label','Guess ' + letter);
+      }
+      changeStage('setup');
+      ui.secret.focus({preventScroll:true});
+      return {stage:'setup'};
+    }
+
+    function publicState() {
+      if (stage === 'setup' || stage === 'handover') return {stage,wordHidden:stage === 'handover'};
+      return {stage,pattern:[...secretWord].map(letter => stage === 'finished' || guesses.has(letter) ? letter : '_').join(''),guesses:[...guesses],wrongGuesses:wrong,guessesLeft:MAX_WRONG - wrong,outcome,paused:!ui['restart-prompt'].hidden};
+    }
+
+    ui['word-form'].addEventListener('submit',event => {
+      event.preventDefault();
+      try {setWord(ui.secret.value);} catch(error) {
+        ui['word-error'].textContent = error.message;
+        ui['word-error'].hidden = false;
+        ui.secret.setAttribute('aria-invalid','true');
+        ui.secret.focus();
+      }
+    });
+    ui.secret.addEventListener('input',() => {
+      ui['word-error'].hidden = true;
+      ui.secret.removeAttribute('aria-invalid');
+    });
+    ui['show-word'].addEventListener('click',() => {
+      const showing = ui.secret.type === 'password';
+      ui.secret.type = showing ? 'text' : 'password';
+      ui['show-word'].textContent = showing ? 'Hide' : 'Show';
+      ui['show-word'].setAttribute('aria-pressed',String(showing));
+      ui['show-word'].setAttribute('aria-label',showing ? 'Hide secret word' : 'Show secret word');
+    });
+    ui['start-guessing'].addEventListener('click',startGuessing);
+    ui['play-again'].addEventListener('click',resetRound);
+    ui['new-word'].addEventListener('click',() => {
+      if (stage === 'finished') {resetRound();return;}
+      ui['restart-prompt'].hidden = false;
+      render();
+      ui['cancel-restart'].focus({preventScroll:true});
+    });
+    ui['confirm-restart'].addEventListener('click',resetRound);
+    ui['cancel-restart'].addEventListener('click',() => {
+      ui['restart-prompt'].hidden = true;
+      render();
+      ui['new-word'].focus({preventScroll:true});
+    });
+    document.addEventListener('keydown',event => {
+      const target = event.target;
+      if (stage !== 'playing' || !ui['restart-prompt'].hidden || event.repeat || event.ctrlKey || event.altKey || event.metaKey || target?.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target?.tagName || '')) return;
+      if (/^[a-zA-Z]$/.test(event.key)) {event.preventDefault();guessLetter(event.key);}
+    });
+    // Clear unfinished games when a page is restored from the browser back cache.
+    window.addEventListener('pageshow',event => {if(event.persisted) resetRound();});
+
+    // Use the same game actions for supported browser agents. Never expose an unfinished secret.
+    const context = document.modelContext;
+    if (context?.registerTool) {
+      const lifecycle = new AbortController();
+      const definitions = [
+        {name:'read_hangman_round',title:'Read hangman round',description:'Read visible game state without revealing the secret word before the round ends.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:true,untrustedContentHint:true},execute:() => publicState()},
+        {name:'set_hangman_secret_word',title:'Set secret word',description:'Player 1 chooses a secret word of 1–24 letters and opens the hidden-word handover screen.',inputSchema:{type:'object',properties:{word:{type:'string',pattern:'^[a-zA-Z]{1,24}$'}},required:['word'],additionalProperties:false},annotations:{readOnlyHint:false,untrustedContentHint:true},execute:input => setWord(input?.word)},
+        {name:'start_hangman_guessing',title:'Start guessing',description:'Player 2 starts the guessing round after Player 1 has hidden the secret word.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:false,untrustedContentHint:true},execute:() => startGuessing()},
+        {name:'guess_hangman_letter',title:'Guess a letter',description:'Guess a single letter in the current round. Repeating a guess does not use another turn.',inputSchema:{type:'object',properties:{letter:{type:'string',pattern:'^[a-zA-Z]$'}},required:['letter'],additionalProperties:false},annotations:{readOnlyHint:false,untrustedContentHint:true},execute:input => guessLetter(input?.letter)},
+        {name:'reset_hangman_round',title:'Choose a new word',description:'End the current round, clear the secret word, and return to Player 1’s word entry screen.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:false,untrustedContentHint:true},execute:() => resetRound()}
+      ];
+      for (const definition of definitions) {
+        try {Promise.resolve(context.registerTool(definition,{signal:lifecycle.signal})).catch(() => {});} catch (_) {}
+      }
+      window.addEventListener('pagehide',() => lifecycle.abort(),{once:true});
+    }
+  })();
+  </script>
+</body>
+</html>
