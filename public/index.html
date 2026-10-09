@@ -14,7 +14,7 @@
 <div class="room-strip"><div><span class="small-label">ROOM CODE</span><strong id="room-code"></strong><span class="players" id="players"></span></div><div class="room-actions"><button class="secondary" id="share" type="button">Share game</button><button class="small-link" id="leave" type="button">Other room</button></div></div>
 <div class="invite-box" id="invite-box" hidden><label for="invite-link">Game link</label><input class="field" id="invite-link" readonly><p class="helper" id="invite-note">Copy this link and send it to your friend.</p></div>
 <p class="error room-error" id="room-error" role="alert" hidden></p>
-<div class="game-layout" id="layout" data-stage="waiting">
+<div class="room-content"><div class="game-layout" id="layout" data-stage="waiting">
 <section class="board" id="board" aria-label="Hangman drawing" hidden><div class="board-top"><span class="board-label" id="board-label">Wrong guesses</span><span class="chance-pill" id="chances">6 guesses left</span></div><div class="drawing-wrap"><svg class="drawing" viewBox="0 0 260 280" role="img" aria-labelledby="drawing-title">
             <title id="drawing-title">Empty gallows. Six wrong guesses allowed.</title>
             <path class="gallows" d="M28 257H190 M65 257V28H170V58 M65 69L106 28"/>
@@ -34,6 +34,8 @@
 <div id="waiting-word" hidden><p class="intro" id="waiting-word-copy"></p></div>
 <div id="playing" hidden><div class="word" id="word" aria-hidden="true"></div><p class="sr-only" id="word-status"></p><div class="keyboard" id="keyboard" role="group" aria-label="Letters" aria-describedby="word-status"></div><p class="feedback" id="feedback" role="status" aria-live="polite" aria-atomic="true"></p><p class="keyboard-note" id="keyboard-note"></p></div>
 <p class="helper opponent-status" id="opponent-status"></p>
-</section></div></section>
+</section></div>
+<aside class="chat-card" aria-label="Private room chat"><details id="chat-panel" open><summary>Game chat <span id="chat-unread" class="chat-badge" hidden></span></summary><p class="helper chat-help">Only the two players in this room can read this chat. The latest 100 messages stay until the room expires.</p><div id="chat-messages" class="chat-messages" role="log" aria-label="Room messages" aria-live="polite" aria-relevant="additions"></div><form id="chat-form"><label class="sr-only" for="chat-input">Message</label><div class="join-row"><input class="field" id="chat-input" maxlength="500" placeholder="Type a message…" autocomplete="off" required><button class="secondary" id="chat-send" type="submit">Send</button></div><p class="helper">Up to 500 characters.</p></form><p id="chat-error" class="error" role="alert" hidden></p></details></aside>
+</div></section>
 </main><footer><p>Six wrong guesses. Then swap turns.<br>Both phones need an internet connection.</p></footer>
 </div><noscript><p>Please enable JavaScript to play Hangman Online.</p></noscript></body></html>

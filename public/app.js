@@ -5,6 +5,51 @@
   let session = null, state = null, socket = null, online = false, pending = null;
   let retryTimer = null, heartbeat = null, retryCount = 0, active = false, httpBusy = false;
   let lastView = null;
+  let chatPending = null, chatSeen = new Set(), chatInitialised = false, chatUnread = 0;
+  function chatError(message = '') { $('chat-error').textContent = message; $('chat-error').hidden = !message; }
+  function resetChat() {
+    if (chatPending) clearTimeout(chatPending.timer);
+    chatPending = null; chatSeen = new Set(); chatInitialised = false; chatUnread = 0;
+    $('chat-messages').replaceChildren(); $('chat-input').value = '';
+    $('chat-unread').hidden = true; chatError();
+  }
+  function renderChat() {
+    const messages = state.chat || [];
+    const list = $('chat-messages');
+    const atBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 40;
+    const added = messages.filter(message => !chatSeen.has(message.id));
+    if (chatInitialised && !$('chat-panel').open) chatUnread += added.filter(message => !message.mine).length;
+    if (added.length || !chatInitialised) {
+      list.replaceChildren();
+      if (!messages.length) {
+        const empty = document.createElement('p'); empty.className = 'chat-empty'; empty.textContent = 'Say hello! Your messages appear here.'; list.appendChild(empty);
+      }
+      for (const message of messages) {
+        const item = document.createElement('div'); item.className = 'chat-message' + (message.mine ? ' mine' : '');
+        const name = document.createElement('strong'); name.textContent = message.mine ? message.name + ' (you)' : message.name;
+        const time = document.createElement('time'); time.dateTime = new Date(message.sentAt).toISOString(); time.textContent = new Date(message.sentAt).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+        const body = document.createElement('p'); body.textContent = message.text;
+        item.append(name, time, body); list.appendChild(item);
+      }
+      if (atBottom || !chatInitialised || added.some(message => message.mine)) list.scrollTop = list.scrollHeight;
+    }
+    chatSeen = new Set(messages.map(message => message.id)); chatInitialised = true;
+    if ($('chat-panel').open) chatUnread = 0;
+    $('chat-unread').hidden = !chatUnread; $('chat-unread').textContent = chatUnread + ' new';
+    $('chat-send').disabled = !online || !!chatPending;
+    $('chat-send').textContent = chatPending ? 'Sending…' : 'Send';
+  }
+  function sendChat() {
+    if (!online || chatPending || socket?.readyState !== WebSocket.OPEN) return;
+    const text = $('chat-input').value.trim();
+    if (!text || text.length > 500) { chatError('Enter a message of 1–500 characters.'); return; }
+    const id = crypto.randomUUID();
+    chatPending = { id, text, timer: setTimeout(() => {
+      if (chatPending?.id !== id) return;
+      chatPending = null; chatError('Could not confirm your message. Check the chat before sending again.'); renderChat();
+    }, 8000) };
+    socket.send(JSON.stringify({ type: 'chat', id, text })); chatError(); renderChat();
+  }
   const storageKey = 'hangman-online-rooms-v1';
   let stored = { rooms: {}, current: null };
   try { const value = JSON.parse(localStorage.getItem(storageKey)); if (value?.rooms && typeof value.rooms === 'object') stored = value; } catch (_) {}
@@ -45,11 +90,12 @@
     const old = socket; socket = null;
     if (old) old.close();
     online = false;
+    if (chatPending) { clearTimeout(chatPending.timer); chatPending = null; }
     if (pending) clearTimeout(pending.timer);
     pending = null;
   }
   function showWelcome() {
-    active = false; closeSocket(); state = null; lastView = null;
+    active = false; closeSocket(); resetChat(); state = null; lastView = null;
     $('welcome').hidden = false; $('room').hidden = true;
     status('Two phones. Anywhere.', true);
     const current = stored.current && stored.rooms[stored.current];
@@ -58,7 +104,7 @@
     history.replaceState(null, '', location.pathname);
   }
   function startRoom(value) {
-    closeSocket(); remember(value); active = true; retryCount = 0;
+    closeSocket(); resetChat(); remember(value); active = true; retryCount = 0;
     state = value.state; online = false;
     $('welcome').hidden = true; $('room').hidden = false;
     $('invite-box').hidden = true;
@@ -128,12 +174,20 @@
         if (!online) error('');
         state = message.state; online = true; retryCount = 0;
         status('Connected', true); render();
+      } else if (message.type === 'chatAck') {
+        if (chatPending?.id === message.id) {
+          if ($('chat-input').value.trim() === chatPending.text) $('chat-input').value = '';
+          clearTimeout(chatPending.timer); chatPending = null; chatError(); renderChat();
+        }
       } else if (message.type === 'ack') {
         if (pending?.id === message.id) {
           if (pending.type === 'setWord') clearSecret();
           clearTimeout(pending.timer); pending = null; error(''); render();
         }
       } else if (message.type === 'error') {
+        if (chatPending?.id === message.id) {
+          clearTimeout(chatPending.timer); chatPending = null; chatError(message.error); renderChat(); return;
+        }
         if (pending?.id === message.id) { clearTimeout(pending.timer); pending = null; }
         error(message.error); render();
       }
@@ -141,6 +195,7 @@
     current.addEventListener('close', () => {
       if (socket !== current) return;
       clearInterval(heartbeat); heartbeat = null; socket = null; online = false;
+      if (chatPending) { clearTimeout(chatPending.timer); chatPending = null; chatError('Connection interrupted. Check the chat before sending again.'); }
       if (pending) clearTimeout(pending.timer); pending = null;
       if (active) { status('Reconnecting…'); render(); retry(); }
     });
@@ -169,6 +224,7 @@
   }
   function render() {
     if (!state) return;
+    renderChat();
     const canChoose = state.phase === 'choosing' && state.role === 'setter';
     const playing = state.phase === 'playing';
     const guessing = playing && state.role === 'guesser';
@@ -244,6 +300,10 @@
     }
     $('invite-box').hidden = false;
   }
+  $('chat-form').addEventListener('submit', event => { event.preventDefault(); sendChat(); });
+  $('chat-panel').addEventListener('toggle', () => {
+    if ($('chat-panel').open) { chatUnread = 0; $('chat-unread').hidden = true; $('chat-messages').scrollTop = $('chat-messages').scrollHeight; }
+  });
   $('create-form').addEventListener('submit', event => { event.preventDefault(); openRoom(true); });
   $('join-form').addEventListener('submit', event => { event.preventDefault(); openRoom(false); });
   $('word-form').addEventListener('submit', event => {

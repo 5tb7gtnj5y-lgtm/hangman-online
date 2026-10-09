@@ -74,7 +74,9 @@ export class HangmanRoom extends DurableObject {
   send(ws, message) { try { ws.send(JSON.stringify(message)); } catch (_) {} }
   view(id, except = null) {
     const online = new Set(this.ctx.getWebSockets().filter(ws => ws !== except).map(ws => ws.deserializeAttachment()?.playerId).filter(Boolean));
-    return viewGame(this.game, id, online);
+    return { ...viewGame(this.game, id, online), chat: (this.game.chat || []).map(message => ({
+      id: message.id, name: message.name, text: message.text, sentAt: message.sentAt, mine: message.playerId === id
+    })) };
   }
   broadcast(except = null) {
     if (!this.live()) return;
@@ -141,6 +143,22 @@ export class HangmanRoom extends DurableObject {
         }
         if (!attachment.playerId) { ws.close(1008, 'Authenticate first'); return; }
         if (typeof command.id !== 'string' || command.id.length > 80) throw new Error('Invalid game action.');
+        if (command.type === 'chat') {
+          const player = this.game.players.find(player => player.id === attachment.playerId);
+          if (!player) throw new Error('Your player session is not valid.');
+          if (!command.id || typeof command.text !== 'string' || !command.text.trim() || command.text.trim().length > 500 || /[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/.test(command.text)) throw new Error('Enter a message of 1–500 characters.');
+          const messages = this.game.chat || [];
+          if (!messages.some(message => message.id === command.id && message.playerId === player.id)) {
+            const now = Date.now();
+            if (now - (this.game.chatLastSent?.[player.id] || 0) < 1000) throw new Error('Wait a moment before sending another message.');
+            this.game.chat = [...messages, { id: command.id, playerId: player.id, name: player.name, text: command.text.trim(), sentAt: now }].slice(-100);
+            this.game.chatLastSent = { ...this.game.chatLastSent, [player.id]: now };
+            await this.save();
+          }
+          this.send(ws, { type: 'chatAck', id: command.id });
+          this.broadcast();
+          return;
+        }
         const changed = applyAction(this.game, attachment.playerId, command);
         if (changed) await this.save();
         this.send(ws, { type: 'ack', id: command.id });

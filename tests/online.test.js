@@ -49,6 +49,22 @@ try {
   pass('room creation, two-player limit, player credentials and origin checks');
   let a=await connect(alice.code,alice.token);let b=await connect(alice.code,bob.token);
   await a.wait(m=>m.type==='state'&&m.state.opponent?.online===true);
+  a.send({type:'chat',id:'chat-one',text:'Hello Bob <script>!',round:999,name:'Imposter'});
+  await a.wait(m=>m.type==='chatAck'&&m.id==='chat-one');
+  for(const client of [a,b])await client.wait(m=>m.type==='state'&&m.state.chat?.length===1);
+  assert.equal(a.latest().chat[0].name,'Alice');assert.equal(a.latest().chat[0].mine,true);assert.equal(b.latest().chat[0].mine,false);
+  assert.equal(b.latest().chat[0].text,'Hello Bob <script>!');
+  a.send({type:'chat',id:'chat-one',text:'Duplicate'});
+  a.send({type:'chat',id:'too-fast',text:'Too fast'});
+  await a.wait(m=>m.type==='error'&&m.id==='too-fast');assert.equal(a.latest().chat.length,1);
+  b.send({type:'chat',id:'invalid-chat',text:'x'.repeat(501)});
+  await b.wait(m=>m.type==='error'&&m.id==='invalid-chat');
+  b.send({type:'chat',id:'chat-two',text:'Hello Alice'});
+  await b.wait(m=>m.type==='chatAck'&&m.id==='chat-two');
+  await a.wait(m=>m.type==='state'&&m.state.chat?.length===2);
+  const other=await post('/api/rooms',{name:'Other'},201);assert.deepEqual(other.state.chat,[]);
+  assert(!JSON.stringify(a.latest().chat).includes(alice.token));
+  pass('private live chat, server-assigned names, per-player messages, duplicate protection, rate and length limits');
   await action(b,'setWord',{word:'CHEAT'},true);
   await action(a,'setWord',{word:'123'},true);
   await action(a,'setWord',{word:'BALLOON'});
@@ -84,6 +100,8 @@ try {
   await mf.dispose();mf=runtime();await mf.ready;
   const after=await post('/api/rooms/'+alice.code+'/resume',{token:bob.token});assert.equal(after.state.round,3);assert.equal(after.state.pattern,'_______');assert(!JSON.stringify(after).includes('PERSIST'));
   const reconnect=await connect(alice.code,bob.token);assert.equal(reconnect.latest().role,'guesser');
+  assert.equal(after.state.chat.length,2);assert.equal(reconnect.latest().chat[0].text,'Hello Bob <script>!');
+  pass('chat history survives round swaps, reconnecting and a runtime restart');
   pass('a Cloudflare runtime restart preserves room membership and the active round in SQLite');
   console.log('All Cloudflare runtime integration checks passed.');
 } finally {
