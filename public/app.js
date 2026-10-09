@@ -230,19 +230,22 @@
     }
     $('keyboard').appendChild(row);
   }
-  async function share() {
-    if (!session) return;
-    const link = new URL(location.pathname, location.origin); link.searchParams.set('room', session.code);
-    $('invite-link').value = link.href;
+  async function share(home = false) {
+    const inRoom = !home && active && session;
+    if (!home && !inRoom) return;
+    const link = new URL(location.pathname, location.origin);
+    if (inRoom) link.searchParams.set('room', session.code);
+    const prefix = home ? 'home-' : '';
+    $(prefix + 'invite-link').value = link.href;
     try {
-      if (navigator.share) { await navigator.share({ title: 'Play Hangman with me', text: 'Join my hangman game. Room code: ' + session.code, url: link.href }); return; }
+      if (navigator.share) { await navigator.share({ title: 'Play Hangman with me', text: inRoom ? 'Join my hangman game. Room code: ' + session.code : 'Play Hangman Online with a friend', url: link.href }); return; }
       await navigator.clipboard.writeText(link.href);
-      $('invite-note').textContent = 'Link copied. Send it to your friend.';
+      $(prefix + 'invite-note').textContent = 'Link copied. Send it to your friend.';
     } catch (fail) {
       if (fail.name === 'AbortError') return;
-      $('invite-note').textContent = 'Select and copy this link, then send it to your friend.';
+      $(prefix + 'invite-note').textContent = 'Select and copy this link, then send it to your friend.';
     }
-    $('invite-box').hidden = false;
+    $(prefix + 'invite-box').hidden = false;
   }
   $('create-form').addEventListener('submit', event => { event.preventDefault(); openRoom(true); });
   $('join-form').addEventListener('submit', event => { event.preventDefault(); openRoom(false); });
@@ -256,7 +259,8 @@
     const show = $('secret').type === 'password'; $('secret').type = show ? 'text' : 'password';
     $('show-word').textContent = show ? 'Hide' : 'Show'; $('show-word').setAttribute('aria-pressed', String(show)); $('show-word').setAttribute('aria-label', show ? 'Hide secret word' : 'Show secret word');
   });
-  $('share').addEventListener('click', share); $('invite-friend').addEventListener('click', share);
+  $('share').addEventListener('click', () => share()); $('invite-friend').addEventListener('click', () => share());
+  $('share-home').addEventListener('click', () => share(true));
   $('leave').addEventListener('click', () => { clearSecret(); showWelcome(); });
   $('rejoin').addEventListener('click', () => { const saved = stored.rooms[stored.current]; if (saved) resume(saved); });
   document.addEventListener('keydown', event => {
