@@ -6,8 +6,9 @@
 <section class="card welcome" id="welcome" aria-labelledby="welcome-heading">
 <span class="eyebrow">Play with a friend</span><h2 id="welcome-heading">Your word.<br>Their challenge.</h2><p class="intro">Create a room and share it. Your friend guesses on their own phone while you watch live.</p>
 <form id="create-form"><label for="name">Your name <span class="optional">(optional)</span></label><input class="field" id="name" maxlength="24" placeholder="Enter your name" autocomplete="nickname"><button type="submit" class="primary full" id="create-button">Create a game</button></form>
-<div class="divider"><span>or join a game</span></div>
-<form id="join-form"><label for="code">Room code</label><div class="join-row"><input class="field code-input" id="code" maxlength="12" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="8-character code" required><button class="secondary" id="join-button" type="submit">Join</button></div></form>
+<button class="primary full join-game" id="join-button" type="submit" form="join-form">Join game</button>
+<div class="divider"><span>Have a room code?</span></div>
+<form id="join-form"><label for="code">Room code</label><input class="field code-input" id="code" maxlength="12" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="8-character code" required><p class="helper">Enter your friend’s room code, then choose Join game above.</p></form>
 <p class="error" id="welcome-error" role="alert" hidden></p><button class="small-link" id="rejoin" type="button" hidden>Rejoin your game</button>
 </section>
 <section id="room" hidden aria-label="Your shared game">
