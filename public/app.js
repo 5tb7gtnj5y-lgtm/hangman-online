@@ -229,7 +229,11 @@
     const playing = state.phase === 'playing';
     const guessing = playing && state.role === 'guesser';
     const last = state.lastResult;
-    $('room-code').textContent = state.code;
+    const inviting = state.phase === 'waiting' && !state.opponent;
+    $('room-invite-code').hidden = !inviting;
+    $('share').hidden = !inviting;
+    if (!inviting) { $('invite-box').hidden = true; $('invite-link').value = ''; }
+    $('room-code').textContent = inviting ? state.code : '';
     $('players').textContent = state.me.name + (state.opponent ? ' vs ' + state.opponent.name : ' · waiting for a friend');
     $('round-number').textContent = 'Round ' + state.round;
     $('role-label').textContent = state.phase === 'waiting' ? 'Invite a friend' : canChoose ? 'Your turn · Choose a word' : guessing ? 'Your turn · Guess the word' : 'Your opponent’s turn';
@@ -287,7 +291,7 @@
     $('keyboard').appendChild(row);
   }
   function showInvite() {
-    if (!active || !session) return null;
+    if (!active || !session || state?.phase !== 'waiting' || state.opponent) return null;
     const link = new URL(location.pathname, location.origin);
     link.searchParams.set('room', session.code);
     $('invite-link').value = link.href;
