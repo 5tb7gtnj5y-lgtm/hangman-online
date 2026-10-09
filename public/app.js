@@ -286,20 +286,45 @@
     }
     $('keyboard').appendChild(row);
   }
-  async function share() {
-    if (!session) return;
-    const link = new URL(location.pathname, location.origin); link.searchParams.set('room', session.code);
+  function showInvite() {
+    if (!active || !session) return null;
+    const link = new URL(location.pathname, location.origin);
+    link.searchParams.set('room', session.code);
     $('invite-link').value = link.href;
-    try {
-      if (navigator.share) { await navigator.share({ title: 'Play Hangman with me', text: 'Join my hangman game. Room code: ' + session.code, url: link.href }); return; }
-      await navigator.clipboard.writeText(link.href);
-      $('invite-note').textContent = 'Link copied. Send it to your friend.';
-    } catch (fail) {
-      if (fail.name === 'AbortError') return;
-      $('invite-note').textContent = 'Select and copy this link, then send it to your friend.';
-    }
     $('invite-box').hidden = false;
+    $('invite-note').textContent = 'Send this link to the other player, or use room code ' + session.code + '.';
+    return link.href;
   }
+  async function copyInvite() {
+    const link = showInvite();
+    if (!link) return;
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error('Clipboard unavailable');
+      await navigator.clipboard.writeText(link);
+      $('invite-note').textContent = 'Game link copied. Paste it into WhatsApp or a message to your friend.';
+    } catch (_) {
+      $('invite-link').focus(); $('invite-link').select();
+      $('invite-link').setSelectionRange(0, link.length);
+      let copied = false;
+      try { copied = document.execCommand('copy'); } catch (_) {}
+      $('invite-note').textContent = copied ? 'Game link copied. Paste it into a message to your friend.' : 'The link is selected. Choose Copy, then paste it into a message to your friend.';
+    }
+  }
+  async function share() {
+    const link = showInvite();
+    if (!link) return;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'Play Hangman with me', text: 'Join my hangman game. Room code: ' + session.code, url: link });
+        return;
+      } catch (_) {
+        // Keep the invite link and copy button available even when sharing is cancelled or blocked.
+      }
+    }
+    await copyInvite();
+  }
+  $('copy-invite').addEventListener('click', copyInvite);
+  $('invite-link').addEventListener('click', () => { $('invite-link').select(); });
   $('chat-form').addEventListener('submit', event => { event.preventDefault(); sendChat(); });
   $('chat-panel').addEventListener('toggle', () => {
     if ($('chat-panel').open) { chatUnread = 0; $('chat-unread').hidden = true; $('chat-messages').scrollTop = $('chat-messages').scrollHeight; }
