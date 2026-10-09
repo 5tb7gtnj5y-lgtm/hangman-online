@@ -5,6 +5,7 @@
   let session = null, state = null, socket = null, online = false, pending = null;
   let retryTimer = null, heartbeat = null, retryCount = 0, active = false, httpBusy = false;
   let lastView = null;
+  let hadOpponent = false, joinNoticeTimer = null;
   const storageKey = 'hangman-online-rooms-v1';
   let stored = { rooms: {}, current: null };
   try { const value = JSON.parse(localStorage.getItem(storageKey)); if (value?.rooms && typeof value.rooms === 'object') stored = value; } catch (_) {}
@@ -50,6 +51,8 @@
   }
   function showWelcome() {
     active = false; closeSocket(); state = null; lastView = null;
+    clearTimeout(joinNoticeTimer); hadOpponent = false;
+    $('join-notification').hidden = true; $('join-notification').textContent = '';
     $('welcome').hidden = false; $('room').hidden = true;
     status('Two phones. Anywhere.', true);
     const current = stored.current && stored.rooms[stored.current];
@@ -60,6 +63,8 @@
   function startRoom(value) {
     closeSocket(); remember(value); active = true; retryCount = 0;
     state = value.state; online = false;
+    clearTimeout(joinNoticeTimer); hadOpponent = !!state.opponent;
+    $('join-notification').hidden = true; $('join-notification').textContent = '';
     $('welcome').hidden = true; $('room').hidden = false;
     $('invite-box').hidden = true;
     history.replaceState(null, '', '?room=' + encodeURIComponent(session.code));
@@ -167,8 +172,19 @@
       const slot = document.createElement('span'); slot.className = 'letter-slot' + (missing.includes(letter) ? ' missing' : ''); slot.textContent = letter === '_' ? '' : letter; target.appendChild(slot);
     }
   }
+  function notifyJoin() {
+    if (!hadOpponent && state.opponent) {
+      const notice = $('join-notification');
+      notice.hidden = false;
+      notice.textContent = state.opponent.name + ' joined your room. You’re ready to play!';
+      clearTimeout(joinNoticeTimer);
+      joinNoticeTimer = setTimeout(() => { notice.hidden = true; notice.textContent = ''; }, 10000);
+    }
+    hadOpponent = !!state.opponent;
+  }
   function render() {
     if (!state) return;
+    notifyJoin();
     const canChoose = state.phase === 'choosing' && state.role === 'setter';
     const playing = state.phase === 'playing';
     const guessing = playing && state.role === 'guesser';

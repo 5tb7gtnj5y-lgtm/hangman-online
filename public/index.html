@@ -14,6 +14,7 @@
 <section id="room" hidden aria-label="Your shared game">
 <div class="room-strip"><div><span class="small-label">ROOM CODE</span><strong id="room-code"></strong><span class="players" id="players"></span></div><div class="room-actions"><button class="secondary" id="share" type="button">Share game</button><button class="small-link" id="leave" type="button">Other room</button></div></div>
 <div class="invite-box" id="invite-box" hidden><label for="invite-link">Game link</label><input class="field" id="invite-link" readonly><p class="helper" id="invite-note">Copy this link and send it to your friend.</p></div>
+<div class="invite-box" id="join-notification" role="status" aria-live="polite" aria-atomic="true" hidden></div>
 <p class="error room-error" id="room-error" role="alert" hidden></p>
 <div class="game-layout" id="layout" data-stage="waiting">
 <section class="board" id="board" aria-label="Hangman drawing" hidden><div class="board-top"><span class="board-label" id="board-label">Wrong guesses</span><span class="chance-pill" id="chances">6 guesses left</span></div><div class="drawing-wrap"><svg class="drawing" viewBox="0 0 260 280" role="img" aria-labelledby="drawing-title">
