@@ -20,8 +20,8 @@
 <section class="board" id="board" aria-label="Hangman drawing" hidden><div class="board-top"><span class="board-label" id="board-label">Wrong guesses</span><span class="chance-pill" id="chances">6 guesses left</span></div><div class="drawing-wrap"><svg class="drawing" viewBox="0 0 260 280" role="img" aria-labelledby="drawing-title">
             <defs><filter id="pencil-stroke" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency=".065 .7" numOctaves="3" seed="8" result="grain"/><feDisplacementMap in="SourceGraphic" in2="grain" scale="1.7" xChannelSelector="R" yChannelSelector="G" result="sketched"/><feTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="2" seed="12" result="texture"/><feColorMatrix in="texture" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .55 .45"/><feComposite in="sketched" operator="in"/></filter></defs>
             <title id="drawing-title">Empty gallows. Six wrong guesses allowed.</title>
-            <path class="gallows" d="M28 257H190 M65 257V28H170V58 M65 69L106 28"/>
-            <g class="person">
+            <path class="gallows modern-drawing" d="M28 257H190 M65 257V28H170V58 M65 69L106 28"/>
+            <g class="person modern-drawing">
               <circle class="part" data-part="1" cx="170" cy="80" r="22"/>
               <path class="part" data-part="2" d="M170 102V173"/>
               <path class="part" data-part="3" d="M170 116L136 149"/>
@@ -29,6 +29,8 @@
               <path class="part" data-part="5" d="M170 173L139 217"/>
               <path class="part" data-part="6" d="M170 173L201 217"/>
             </g>
+<g class="gallows pencil-drawing"><path d="M27 258Q100 255 191 257 M64 257Q67 155 64 29Q114 26 170 29L171 58 M65 70Q85 50 107 28"/><path class="pencil-retrace" d="M30 260Q114 257 187 259 M67 256Q64 139 67 31L168 31L168 57 M67 71L108 30"/></g>
+            <g class="person pencil-drawing"><g class="part" data-part="1"><path d="M169 58C182 57 193 67 192 80C194 91 181 104 169 102C156 103 146 92 147 79C147 66 157 57 169 58Z"/><path class="pencil-retrace" d="M171 60C182 59 190 69 190 81C190 94 179 101 168 100C154 99 148 89 149 78C148 68 158 60 171 60"/></g><g class="part" data-part="2"><path d="M169 102Q172 120 169 140Q168 157 171 174"/><path class="pencil-retrace" d="M172 103Q170 121 172 141L170 173"/></g><g class="part" data-part="3"><path d="M170 117Q154 131 135 150"/><path class="pencil-retrace" d="M169 119Q150 139 137 148"/></g><g class="part" data-part="4"><path d="M171 117Q187 133 205 148"/><path class="pencil-retrace" d="M170 119Q189 139 202 151"/></g><g class="part" data-part="5"><path d="M170 173Q156 193 139 218"/><path class="pencil-retrace" d="M168 175Q150 202 141 217"/></g><g class="part" data-part="6"><path d="M171 173Q187 195 202 218"/><path class="pencil-retrace" d="M169 175Q185 200 199 217"/></g></g>
           </svg></div><p class="board-bottom"><strong>One letter at a time.</strong><br>Find the word before the drawing is complete.</p></section>
 <section class="card play-card" id="game-card"><div class="round-tag"><span class="eyebrow" id="role-label"></span><span class="round-number" id="round-number"></span></div><h2 id="round-heading" tabindex="-1"></h2>
 <div class="result" id="last-result" role="status" aria-live="polite" hidden><h3 id="result-heading"></h3><p id="result-copy"></p><div class="word" id="result-word" aria-hidden="true"></div><p class="helper">Roles swapped. Time for the next word.</p></div>
