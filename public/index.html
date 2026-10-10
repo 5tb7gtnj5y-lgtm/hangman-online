@@ -2,6 +2,7 @@
 <html lang="en-GB"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#182536"><meta name="description" content="Play hangman with a friend on two phones, wherever you are. Share a room, watch guesses live and swap turns."><meta name="referrer" content="no-referrer"><title>Hangman Online</title><link rel="stylesheet" href="/style.css"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><script src="/app.js" defer></script></head>
 <body><div class="shell">
 <header><div class="brand"><span class="brand-mark" aria-hidden="true">H</span><h1>Hangman<span class="online-label">ONLINE</span></h1></div><span class="header-note" id="connection" role="status">Two phones.<br>Anywhere.</span></header>
+<div class="theme-toolbar"><label class="theme-toggle" for="pencil-theme"><span class="theme-toggle-label">Pencil sketch</span><input id="pencil-theme" type="checkbox" role="switch"><span class="theme-track" aria-hidden="true"><span></span></span></label></div>
 <main>
 <section class="card welcome" id="welcome" aria-labelledby="welcome-heading">
 <span class="eyebrow">Play with a friend</span><h2 id="welcome-heading">Your word.<br>Their challenge.</h2><p class="intro">Create a room and share it. Your friend guesses on their own phone while you watch live.</p>
@@ -17,6 +18,7 @@
 <p class="error room-error" id="room-error" role="alert" hidden></p>
 <div class="room-content"><div class="game-layout" id="layout" data-stage="waiting">
 <section class="board" id="board" aria-label="Hangman drawing" hidden><div class="board-top"><span class="board-label" id="board-label">Wrong guesses</span><span class="chance-pill" id="chances">6 guesses left</span></div><div class="drawing-wrap"><svg class="drawing" viewBox="0 0 260 280" role="img" aria-labelledby="drawing-title">
+            <defs><filter id="pencil-stroke" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency=".065 .7" numOctaves="3" seed="8" result="grain"/><feDisplacementMap in="SourceGraphic" in2="grain" scale="1.7" xChannelSelector="R" yChannelSelector="G" result="sketched"/><feTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="2" seed="12" result="texture"/><feColorMatrix in="texture" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .55 .45"/><feComposite in="sketched" operator="in"/></filter></defs>
             <title id="drawing-title">Empty gallows. Six wrong guesses allowed.</title>
             <path class="gallows" d="M28 257H190 M65 257V28H170V58 M65 69L106 28"/>
             <g class="person">

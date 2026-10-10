@@ -1,6 +1,20 @@
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
+  const themeKey = 'hangman-online-theme-v1';
+  const themeSwitch = $('pencil-theme');
+  function applyTheme(pencil) {
+    document.documentElement.dataset.theme = pencil ? 'pencil' : 'modern';
+    themeSwitch.checked = pencil;
+    document.querySelector('meta[name="theme-color"]').content = pencil ? '#f5f1e7' : '#182536';
+  }
+  let pencilTheme = false;
+  try { pencilTheme = localStorage.getItem(themeKey) === 'pencil'; } catch (_) {}
+  applyTheme(pencilTheme);
+  themeSwitch.addEventListener('change', () => {
+    applyTheme(themeSwitch.checked);
+    try { localStorage.setItem(themeKey, themeSwitch.checked ? 'pencil' : 'modern'); } catch (_) {}
+  });
   const keys = new Map();
   let session = null, state = null, socket = null, online = false, pending = null;
   let retryTimer = null, heartbeat = null, retryCount = 0, active = false, httpBusy = false;

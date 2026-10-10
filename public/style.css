@@ -110,3 +110,48 @@
     @media(max-width:1100px){.room-content{grid-template-columns:minmax(0,1fr)}.chat-messages{height:240px}}
 
     .join-game{background:var(--blue);color:#fff;margin-top:14px}.join-game:hover{background:#204bbd}
+
+/* Theme switch stays available on the welcome screen and throughout a room. */
+.theme-toolbar{display:flex;justify-content:flex-end;margin:-6px 0 20px}
+.theme-toggle{display:inline-flex;align-items:center;gap:12px;position:relative;margin:0;min-height:44px;padding:5px 0;cursor:pointer;font-size:.875rem;color:var(--muted)}
+.theme-toggle input{position:absolute;right:0;width:48px;height:28px;margin:0;opacity:0;cursor:pointer}
+.theme-track{display:block;width:48px;height:28px;border:1px solid var(--line);border-radius:20px;background:#dce3ec;padding:3px;pointer-events:none}
+.theme-track span{display:block;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #18253640;transition:transform .18s}
+.theme-toggle input:checked + .theme-track{background:var(--blue);border-color:var(--blue)}
+.theme-toggle input:checked + .theme-track span{transform:translateX(20px)}
+.theme-toggle input:focus-visible + .theme-track{outline:3px solid var(--blue);outline-offset:4px}
+/* Graphite on lightly ruled paper; serif lettering deliberately avoids Comic Sans. */
+:root[data-theme="pencil"]{--ink:#383630;--muted:#696459;--paper:#fffdf6;--page:#f5f1e7;--line:#b6afa0;--lime:#e4e5b6;--blue:#475e88;--orange:#ac6650;--good:#365b50;--bad:#934d3a;font-family:Georgia,"Times New Roman",serif}
+[data-theme="pencil"] body{background-color:var(--page);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Cpath fill='%23746a50' opacity='.07' filter='url(%23n)' d='M0 0h160v160H0z'/%3E%3C/svg%3E"),repeating-linear-gradient(0deg,transparent 0 31px,#b5b6ab25 31px 32px)}
+[data-theme="pencil"] h1,[data-theme="pencil"] h2,[data-theme="pencil"] h3,[data-theme="pencil"] .letter-slot{font-style:italic;font-weight:700;letter-spacing:-.035em}
+[data-theme="pencil"] .online-label{color:var(--muted);font-style:normal}
+[data-theme="pencil"] .brand-mark{color:var(--ink);background:transparent;border:2px solid var(--ink);border-radius:8% 14% 9% 12%;box-shadow:2px 2px 0 #38363025;font-style:italic}
+[data-theme="pencil"] :is(.card,.room-strip,.invite-box,.chat-card){background:var(--paper);border:1.5px solid #8b8578;border-radius:6px 13px 8px 11px / 12px 7px 14px 8px;box-shadow:2px 3px 0 #38363016}
+[data-theme="pencil"] :is(.primary,.secondary,.field,#secret,.key,.show-button){border:1.5px solid #777164;border-radius:5px 9px 6px 8px / 8px 5px 10px 6px;box-shadow:1px 2px 0 #38363030;background-image:repeating-linear-gradient(-12deg,transparent 0 3px,#38363006 3px 4px)}
+[data-theme="pencil"] .primary{background-color:var(--lime);color:var(--ink)}
+[data-theme="pencil"] .primary:hover{background-color:#d7d8a2}
+[data-theme="pencil"] .join-game{background-color:#d8e0ea;color:#304561}
+[data-theme="pencil"] .join-game:hover{background-color:#c8d3e2}
+[data-theme="pencil"] :is(.secondary,.field,#secret,.key){background-color:#fffdf6}
+[data-theme="pencil"] :is(.secondary:hover,.key:hover:not(:disabled)){background-color:#ece7da;border-color:var(--ink)}
+[data-theme="pencil"] .show-button{background-color:#e8e2d5;color:var(--ink)}
+[data-theme="pencil"] .key{font-size:1.1rem;font-style:italic}
+[data-theme="pencil"] .key:nth-child(3n){border-radius:9px 4px 8px 5px}
+[data-theme="pencil"] .key.correct{background-color:#dce8dd;border-color:#788975;color:var(--good)}
+[data-theme="pencil"] .key.wrong{background-color:#eddcd0;border-color:#a88b7a;color:var(--bad)}
+[data-theme="pencil"] .letter-slot{border-bottom-width:2px;text-shadow:.4px .6px #38363035}
+[data-theme="pencil"] .letter-slot:nth-child(2n){border-bottom-style:dashed}
+[data-theme="pencil"] .board{background-color:#f8f5eb;background-image:repeating-linear-gradient(0deg,transparent 0 31px,#b5b6ab35 31px 32px);color:var(--ink);border:2px solid #777164;border-radius:9px 15px 8px 12px;box-shadow:2px 3px 0 #38363020}
+[data-theme="pencil"] :is(.board-label,.board-bottom,.board-bottom strong){color:var(--ink)}
+[data-theme="pencil"] .chance-pill{color:var(--ink);background:#e4e5b67a;border:1.5px solid #89896b;border-radius:45% 12% 40% 15% / 20% 45% 18% 35%}
+[data-theme="pencil"] :is(.gallows,.person){stroke:#4d4941;stroke-width:3;filter:url(#pencil-stroke)}
+[data-theme="pencil"] .person{stroke:#37352f;stroke-width:3.5}
+[data-theme="pencil"] .board[data-outcome="lost"] .person{stroke:#855647}
+[data-theme="pencil"] :is(.result,.chat-message){background-color:#e8ecdc;border:1px solid #9b9d89;border-radius:5px 10px 7px 9px}
+[data-theme="pencil"] .result.lost{background-color:#f0e1d7;border-color:#ac8e7b}
+[data-theme="pencil"] .chat-message{background-color:#eee9df;border-color:#c2bbae}
+[data-theme="pencil"] .chat-message.mine{background-color:#e8ecdc}
+[data-theme="pencil"] .room-error{background:#f7e8e1;border-color:#ae897a}
+[data-theme="pencil"] .theme-track{border:1.5px solid #777164;background:#ded8ca;border-radius:9px 12px 8px 10px}
+[data-theme="pencil"] .theme-track span{background:#fffdf6;border:1px solid #777164;box-shadow:1px 1px 0 #38363030}
+@media(prefers-reduced-motion:reduce){.theme-track span{transition:none}}
